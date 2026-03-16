@@ -1,0 +1,128 @@
+@font-face {
+    font-family: BopomofoRuby;
+    src: url(../font/BopomofoRuby1909-v1-Regular.ttf);
+}
+
+.dummy {
+    font-size: 40px;
+    line-height: 1.8;
+    letter-spacing: 2px
+}
+
+/* font-family: '標楷體'; */
+
+.dummy2 {
+    font-family: BopomofoRuby, "KaiTi TC", "BiauKai", "標楷體";
+    font-size: 40px;
+    line-height: 1.8;
+    letter-spacing: 2px
+}
+
+.inter {
+    ruby-position: inter-character;
+}
+
+ruby {
+    padding-right: 2px;
+}
+
+/* 豎標 */
+.h {
+    font-variant-east-asian: salt;
+    -moz-font-feature-settings: "salt";
+    -webkit-font-feature-settings: "salt";
+    font-feature-settings: "salt";
+}
+
+/* 橫標 */
+.v {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    -moz-writing-mode: vertical-rl;
+    text-orientation: upright;
+}
+
+rt {
+    font-size: 26%;
+    letter-spacing: 0;
+    ruby-align: center;
+    text-align: center;
+    /* chrome */
+    text-orientation: upright;
+    letter-spacing: 0;
+}
+
+h2 {
+    background: #ccc;
+}
+
+fieldset {
+    width: 12em;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+}
+
+h1 rt {
+    font-family: BopomofoRuby;
+}
+
+p {
+    margin: 0;
+    font-size: 14pt;
+    line-height: 1.7;
+    text-align: justify;
+    text-indent: 2rem;
+}
+
+.body {
+    column-count: 2;
+    column-gap: 3rem;
+    column-rule: solid black 1px;
+    max-width: 49rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media only screen and (max-width:48em) {
+    .body {
+        max-width: 23rem;
+        column-count: 1;
+    }
+
+    p {
+        margin-bottom: 1rem;
+        text-indent: 0;
+    }
+}
+
+fieldset {
+    width: 12em;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.lr { writing-mode:lr-tb; }
+
+/* ==========================================================================
+   PINYIN-SPECIFIC STYLES (Integrated from the first CSS)
+   ========================================================================== */
+
+.pinyin rt {
+    font-family: sans-serif;
+    /* Pinyin looks better in sans-serif */
+    font-size: 38%;
+    /* Adjust size for readability */
+    letter-spacing: 1px;
+}
+
+.pinyin.v rt,
+.pinyin.inter rt {
+    font-family: sans-serif;
+    /* Pinyin looks better in sans-serif */
+    text-orientation: mixed;
+    font-size: 38%;
+    padding-left: 2px;
+}
