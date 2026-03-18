@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch and Redirect</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="actionBtn">Fetch Data & Open Wikipedia</button>
+    <p id="status">Click the button to start.</p>
+
+    <script>
+        const btn = document.getElementById('actionBtn');
+        const status = document.getElementById('status');
+
+        btn.addEventListener('click', () => {
+            status.textContent = "Fetching data...";
+
+            // 1. Perform the fetch
+            fetch('https://dummyjson.com/test')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    status.textContent = "Data fetched! Opening link...";
+
+                    // 2. Create the anchor element
+                    const link = document.createElement('a');
+                    link.href = "https://www.wikipedia.org";
+                    link.target = "WikipediaWindow";
+                    link.textContent = "维基百科（在新标签页打开）";
+                    
+                    // Style it to be invisible but present in DOM
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+
+                    // 3. Programmatically click it
+                    // NOTE: This works here because it's inside a click-event stack
+                    link.click();
+
+                    // 4. Cleanup
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        status.textContent = "Done!";
+                    }, 1000);
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    status.textContent = "Fetch failed.";
+                });
+        });
+    </script>
+</body>
+</html>
