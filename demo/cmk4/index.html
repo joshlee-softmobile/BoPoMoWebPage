@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-hant-TW">
+<head>
+	<meta charset="utf-8">
+	<link type="text/css" rel="stylesheet" href="index.css" charset="utf8">
+	<title>注音符號調號之數位排版</title>
+</head>
+<body>
+  <div class="main-content">
+    <div id="reader" class="mode-han">
+        <bpmf zhu="ㄓㄨˋ" pin="zhù">注</bpmf><bpmf zhu="ㄧˋ" pin="yì">意</bpmf>！
+        <br>
+        「<bpmf zhu="ㄌㄩˇ" pin="lǚ">旅</bpmf><bpmf zhu="ㄒㄧㄥˊ" pin="xíng">行</bpmf><bpmf zhu="ㄓㄜˇ" pin="zhě">者</bpmf><bpmf zhu="ㄧ" pin="yī">一</bpmf><bpmf zhu="ㄏㄠˋ" pin="hào">號</bpmf>」
+        <br/>
+		<bpmf zhu="ㄍㄜˋ" pin="gè">各</bpmf><bpmf zhu="ㄨㄟˋ" pin="wèi">位</bpmf><bpmf zhu="ㄉㄡ" pin="dōu">都</bpmf><bpmf zhu="ㄏㄠˇ" pin="hǎo">好</bpmf><bpmf zhu="˙ㄅㄚ" pin="ba">吧</bpmf>？
+        <br/>
+		<bpmf zhu="ㄨㄛˇ" pin="wǒ">我</bpmf><bpmf zhu="˙ㄇㄣ" pin="men">們</bpmf><bpmf zhu="ㄉㄡ" pin="dōu">都</bpmf><bpmf zhu="ㄏㄣˇ" pin="hěn">很</bpmf><bpmf zhu="ㄒㄧㄤˇ" pin="xiǎng">想</bpmf><bpmf zhu="ㄋㄧㄢˋ" pin="niàn">念</bpmf><bpmf zhu="ㄋㄧˇ" pin="nǐ">你</bpmf><bpmf zhu="˙ㄇㄣ" pin="men">們</bpmf>。
+        <br/>
+		<bpmf zhu="ㄧㄡˇ" pin="yǒu">有</bpmf><bpmf zhu="ㄎㄨㄥˋ" pin="kòng">空</bpmf><bpmf zhu="ㄐㄧㄡˋ" pin="jiù">就</bpmf><bpmf zhu="ㄌㄞˊ" pin="lái">來</bpmf><bpmf zhu="ㄨㄢˊ" pin="wán">玩</bpmf>。
+    </div>
+
+    <div id="output" class="mode-han"></div>
+
+  </div>
+
+    <div class="controls">
+        <button onclick="setMode('mode-han')">Hanji only</button>
+        <button onclick="setMode('mode-zhu')">With Zhuyin</button>
+        <button onclick="setMode('mode-zhu-only')">Zhuyin only</button>
+        <button onclick="setMode('mode-pin')">With Pinyin</button>
+        <button onclick="setMode('mode-pin-only')">Pinyin only</button>
+    </div>
+
+    <div class="input-section">
+        <label for="bpmf-input">輸入文字 / Input text</label>
+        <p class="input-hint">
+            Format: <code>漢(ㄏㄢˋ)(hàn)字(ㄗˋ)(zì)</code> — one entry per character.<br>
+            Use spaces or newlines to separate entries. Punctuation is passed through as-is.
+        </p>
+        <textarea id="bpmf-input" rows="5" placeholder="漢(ㄏㄢˋ)(hàn)字(ㄗˋ)(zì)"></textarea>
+        <button id="generate-btn" onclick="generateFromInput()">Generate</button>
+        <button id="clear-btn" onclick="clearInput()">Clear</button>
+    </div>
+
+    <script>
+        function setMode(mode) {
+            const reader = document.getElementById('reader');
+            if (reader) reader.className = mode;
+            const output = document.getElementById('output');
+            if (output) output.className = mode;
+        }
+
+        /**
+         * Parses a line of text containing format like 漢(ㄏㄢˋ)(hàn) or 字(ㄗˋ) into <bpmf> elements.
+         * Punctuation and regular text are preserved as text nodes.
+         */
+        function parseLine(line) {
+            const frag = document.createDocumentFragment();
+            // Matches exactly one non-whitespace character, followed by (zhuyin) and optionally (pinyin).
+            // Handles spacing between the character and parentheses.
+            const regex = /([^\s])\s*\(([^()]+)\)(?:\s*\(([^()]+)\))?/gu;
+            let lastIndex = 0;
+            let match;
+
+            while ((match = regex.exec(line)) !== null) {
+                // Add any preceding text as a text node
+                const textBefore = line.substring(lastIndex, match.index);
+                if (textBefore) {
+                    frag.appendChild(document.createTextNode(textBefore));
+                }
+
+                const han = match[1];
+                const zhu = match[2];
+                const pin = match[3];
+
+                const el = document.createElement('bpmf');
+                el.setAttribute('zhu', zhu);
+                if (pin) {
+                    el.setAttribute('pin', pin);
+                }
+                el.textContent = han;
+                frag.appendChild(el);
+
+                lastIndex = regex.lastIndex;
+            }
+
+            // Add any remaining text
+            const textAfter = line.substring(lastIndex);
+            if (textAfter) {
+                frag.appendChild(document.createTextNode(textAfter));
+            }
+
+            return frag;
+        }
+
+        function generateFromInput() {
+            const raw = document.getElementById('bpmf-input').value;
+            const output = document.getElementById('output');
+
+            // Clear existing output content
+            output.innerHTML = '';
+
+            // Split on newlines to preserve them as <br> elements
+            const lines = raw.split(/\r?\n/);
+
+            lines.forEach((line, lineIndex) => {
+                if (lineIndex > 0) {
+                    output.appendChild(document.createElement('br'));
+                }
+                if (line) {
+                    output.appendChild(parseLine(line));
+                }
+            });
+        }
+
+        function clearInput() {
+            document.getElementById('bpmf-input').value = '';
+            document.getElementById('output').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
