@@ -1,0 +1,97 @@
+@font-face { 
+    font-family: 'BopomofoRuby';
+    src: url(../font/BopomofoRuby1909-v1-Regular.ttf);
+}
+
+#reader {
+    font-size: 40px;
+    line-height: 1.2;
+}
+
+/* --- Mode: Characters only --- */
+.mode-han bpmf {
+    display: inline-block;
+}
+
+/* --- Mode: Characters + Zhuyin (vertical on right) --- */
+.mode-zhu bpmf {
+    position: relative;
+    display: inline-block;
+    padding-right: 0.5em;
+}
+
+.mode-zhu bpmf::after {
+    content: attr(zhuyin);
+    writing-mode: vertical-rl;
+    display: flex;              /* treat as flex column */
+    align-items: center;        /* center horizontally */
+    justify-content: center;    /* center vertically */
+    position: absolute;
+    right: -1.5em;
+    left: 1em;
+    top: 0;
+    bottom: 0;
+    font-family: 'BopomofoRuby';
+    font-size: 0.30em;
+    text-orientation: upright;
+    line-height: 1;             /* keep glyphs tight */
+}
+
+/* --- Mode: Characters + Pinyin (horizontal on top) --- */
+.mode-pin bpmf {
+    position: relative;
+    display: inline-block;
+    padding-top: 0.5em;
+}
+
+.mode-pin bpmf::before {
+    content: attr(pinyin);
+    display: flex;              /* treat as flex column */
+    align-items: center;        /* center horizontally */
+    justify-content: center;    /* center vertically */
+    position: absolute;
+    top: 0.1em;
+    right: 0;
+    left: 0;
+    font-family: 'sans-serif';
+    font-size: 0.4em;
+    line-height: 1;             /* keep glyphs tight */
+}
+
+/* --- Mode: Zhuyin only (vertical but laid out horizontally) --- */
+.mode-zhu-only bpmf {
+    writing-mode: vertical-rl;
+    font-size: 0;               /* hide the base character */
+    color: transparent;         /* ensure no glyph shows */
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.mode-zhu-only bpmf::after {
+    content: attr(zhuyin);
+    font-family: 'BopomofoRuby';
+    font-size: 20px;
+    text-orientation: upright;
+}
+
+.mode-zhu-only bpmf {
+    color: black;
+}
+
+/* --- Mode: Pinyin only --- */
+.mode-pin-only bpmf {
+    font-size: 0;               /* hide the base character */
+    color: transparent;         /* ensure no glyph shows */
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.mode-pin-only bpmf::before {
+    content: attr(pinyin);
+    font-family: 'sans-serif';
+    font-size: 35px;            /* restore readable size */
+}
+
+.mode-pin-only bpmf {
+    color: black;
+}
