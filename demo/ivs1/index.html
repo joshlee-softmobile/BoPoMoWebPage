@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-hant-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字嗨注音 IVS 字型互動體驗工具 | Bopomofo IVS Typeface Explorer</title>
+    <meta name="description" content="探索基於 Unicode IVS 技術的注音字型與多音字排版系統，支援注音粉圓、注音芫荽與字嗨標楷體。">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <!-- On-demand Font Loading Screen overlay -->
+    <div id="font-loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-title" id="overlay-title">載入注音粉圓字型中...</div>
+        <div class="loading-subtitle" id="overlay-subtitle">正在下載 BpmfHuninn-Regular.ttf (4.8 MB) 並註冊排版...</div>
+    </div>
+
+    <!-- App container -->
+    <div class="app-container">
+        
+        <!-- Header Branding & Font Toolbar -->
+        <header>
+            <div class="logo-section">
+                <h1>
+                    <svg style="width:28px;height:28px;stroke:var(--accent-blue)" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    字嗨注音 IVS 字型互動體驗工具
+                </h1>
+                <p>Bopomofo Ideographic Variation Sequence (IVS) Typeface Explorer & Validator</p>
+            </div>
+            
+            <!-- Font Switcher on the Fly -->
+            <div class="font-selector-wrapper">
+                <span class="font-selector-label">切換注音字型：</span>
+                <button class="font-btn active" id="btn-huninn" onclick="switchFont('BpmfHuninn', '../font/BpmfHuninn-Regular.ttf', '注音粉圓 (ButTaiwan)', '4.8 MB')">注音粉圓</button>
+                <button class="font-btn" id="btn-iansui" onclick="switchFont('BpmfIansui', '../font/BpmfIansui-Regular.ttf', '注音芫荽 (ButTaiwan)', '7.7 MB')">注音芫荽</button>
+                <button class="font-btn" id="btn-zihikai" onclick="switchFont('BpmfZihiKaiStd', '../font/BpmfZihiKaiStd-Regular.ttf', '字嗨注音標楷 (ButTaiwan)', '17.5 MB')">字嗨標楷</button>
+                <button class="font-btn" id="btn-system" onclick="switchFont('System', '', '系統預設黑體 (無注音標記)', '0 KB')">無注音</button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Dashboard -->
+        <main class="app-dashboard">
+            
+            <!-- Top Row: Editor and Viewport side by side with identical dimensions -->
+            <div class="top-row-grid">
+                
+                <!-- Card 1: Input Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg style="width:20px;height:20px;stroke:var(--accent-blue)" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            編輯文本與範例
+                        </h2>
+                    </div>
+
+                    <!-- Presets Selector -->
+                    <div class="presets-bar">
+                        <span class="presets-label">快速載入範例：</span>
+                        <select class="preset-select" id="preset-selector" onchange="loadPreset(this.value)">
+                            <option value="preset-poyin">【破音字綜合示範】多音字自動變換與手動調整（和、行）</option>
+                            <option value="preset-textbook">【注音教學教材】展示注音留白與填空答題卡功能</option>
+                            <option value="preset-poem">【經典古典詩詞】唐詩《早發白帝城》多音字精美排版</option>
+                        </select>
+                    </div>
+
+                    <!-- Raw Textarea -->
+                    <div class="editor-textarea-wrapper">
+                        <textarea class="editor-textarea" id="text-input" placeholder="請在此輸入要標註注音的中文文章..."></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-bar">
+                        <span style="font-size:0.8rem; color:var(--text-muted)">提示：點擊右側 Live 渲染區字元進行標註。</span>
+                        <button class="btn-primary" onclick="handleLoadText()">
+                            <svg style="width:18px;height:18px;stroke:currentColor" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+                            </svg>
+                            重新解析
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Live Viewport Render Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg style="width:20px;height:20px;stroke:var(--accent-cyan)" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Live 互動式排版渲染區
+                        </h2>
+                        <button class="btn-copy-ivs" id="btn-copy-all" onclick="copyIVSText()" title="複製包含變體選擇子與自訂注音的完整 IVS 格式文字，可直接貼上至 Word 或 Illustrator 中使用">
+                            <svg style="width:16px;height:16px;stroke:currentColor" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            複製 IVS 文字
+                        </button>
+                    </div>
+
+                    <!-- Live Typography Viewer -->
+                    <div class="render-container">
+                        <div class="render-content" id="live-renderer"></div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="legend-container">
+                        <div class="legend-pill">
+                            <div class="legend-color-dot" style="background-color:var(--color-poly-border)"></div>
+                            <span>多音字 (點擊)</span>
+                        </div>
+                        <div class="legend-pill">
+                            <div class="legend-color-dot" style="background-color:var(--color-mod-border)"></div>
+                            <span>已選讀音</span>
+                        </div>
+                        <div class="legend-pill">
+                            <div class="legend-color-dot" style="background-color:var(--color-blank-border)"></div>
+                            <span>注音留白</span>
+                        </div>
+                        <div class="legend-pill">
+                            <div class="legend-color-dot" style="background-color:var(--color-brackets-border)"></div>
+                            <span>注音填空</span>
+                        </div>
+                        <div class="legend-pill">
+                            <div class="legend-color-dot" style="background-color:var(--color-cust-border)"></div>
+                            <span>自訂 (PUA)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Row: Font Attribute & Pronunciation Controller -->
+            <div class="panel controller-panel" style="margin-bottom: 25px;">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg style="width:20px;height:20px;stroke:var(--accent-pink)" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        字型屬性與讀音控制器
+                    </h2>
+                </div>
+
+                <!-- Placeholder when no word selected -->
+                <div class="empty-sidebar-prompt" id="sidebar-empty-state">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <p style="font-weight:600; margin-bottom:4px;">未選擇字元</p>
+                    <p style="font-size:0.85rem;">在上方 Live 互動排版區中，點擊任何中文字，即可動態切換破音字讀音、套用填空樣式或組裝自訂的注音標記。</p>
+                </div>
+
+                <!-- Active Controller Panel (Grid Layout) -->
+                <div class="controller-grid" id="sidebar-active-state" style="display:none;">
+                    
+                    <!-- Column 1: Selected Word Info & Special Presentation Styles -->
+                    <div class="controller-col-profile">
+                        <div class="active-word-display" style="margin-bottom: 20px;">
+                            <div class="word-glyph-box">
+                                <div class="word-glyph" id="active-glyph">和</div>
+                                <div class="word-details">
+                                    <span class="word-char-name" id="active-char-name">漢字 "和"</span>
+                                    <span class="word-state-badge" id="active-state-badge" style="background:var(--color-polyphonic); color:var(--color-poly-border)">多音字</span>
+                                </div>
+                            </div>
+                            <div class="poyin-selectors-badge" id="active-unicode-badge">U+548C</div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="control-section-title">特殊排版樣式</h3>
+                            <div class="special-actions-stack">
+                                <button class="btn-secondary" id="btn-action-blank" onclick="applySpecialMode('blank')">注音留白 (E01E0)</button>
+                                <button class="btn-secondary" id="btn-action-brackets" onclick="applySpecialMode('brackets')">注音填空 (留空引導)</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 2: Polyphonic Readings / Probes -->
+                    <div class="controller-col-readings">
+                        <!-- Standard Polyphonic Readings -->
+                        <div id="section-standard-readings" style="width: 100%;">
+                            <h3 class="control-section-title">標準詞彙讀音 (IVS 選擇)</h3>
+                            <div class="poyin-options-grid" id="poyin-options-container">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Generic Probe for Unrecognized Words -->
+                        <div id="section-generic-probe" style="display:none; width: 100%;">
+                            <h3 class="control-section-title">通用 IVS 字形探針 (VS17 - VS26)</h3>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">本漢字不在本機破音字庫中，您可以透過下方探針強行注入變體選擇子，測試字型檔是否包含該字的隱藏注音字形：</p>
+                            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;" id="probe-buttons-container">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 3: Custom PUA Syllable Assembler -->
+                    <div class="controller-col-custom">
+                        <h3 class="control-section-title">自訂注音標記 (PUA 自訂組裝)</h3>
+                        <div class="custom-bopomofo-box">
+                            <div class="custom-display-bar">
+                                <div>
+                                    <span style="font-size:0.75rem; color:var(--text-muted); display:block;">拼裝注音：</span>
+                                    <span class="custom-display-value" id="custom-phonetic-display">---</span>
+                                </div>
+                                <div class="custom-pua-info">
+                                    <span style="display:block; text-align:right;">PUA 映射代碼：</span>
+                                    <span id="custom-pua-code" style="color:var(--accent-cyan)">無</span>
+                                </div>
+                            </div>
+
+                            <!-- Virtual Bopomofo Keyboard -->
+                            <div class="v-keyboard">
+                                <!-- Row 1: Consonants -->
+                                <div class="v-key consonant" onclick="pressVKey('ㄅ')">ㄅ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄆ')">ㄆ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄇ')">ㄇ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄈ')">ㄈ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄉ')">ㄉ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄊ')">ㄊ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄋ')">ㄋ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄌ')">ㄌ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄍ')">ㄍ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄎ')">ㄎ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄏ')">ㄏ</div>
+
+                                <!-- Row 2: Consonants -->
+                                <div class="v-key consonant" onclick="pressVKey('ㄐ')">ㄐ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄑ')">ㄑ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄒ')">ㄒ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄓ')">ㄓ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄔ')">ㄔ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄕ')">ㄕ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄖ')">ㄖ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄗ')">ㄗ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄘ')">ㄘ</div>
+                                <div class="v-key consonant" onclick="pressVKey('ㄙ')">ㄙ</div>
+                                <div class="v-key tone" onclick="pressVKey('ˊ')">ˊ</div>
+
+                                <!-- Row 3: Medials & Vowels -->
+                                <div class="v-key medial" onclick="pressVKey('ㄧ')">ㄧ</div>
+                                <div class="v-key medial" onclick="pressVKey('ㄨ')">ㄨ</div>
+                                <div class="v-key medial" onclick="pressVKey('ㄩ')">ㄩ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄚ')">ㄚ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄛ')">ㄛ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄜ')">ㄜ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄝ')">ㄝ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄞ')">ㄞ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄟ')">ㄟ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄠ')">ㄠ</div>
+                                <div class="v-key tone" onclick="pressVKey('ˇ')">ˇ</div>
+
+                                <!-- Row 4: Vowels & Tones -->
+                                <div class="v-key vowel" onclick="pressVKey('ㄡ')">ㄡ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄢ')">ㄢ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄣ')">ㄣ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄤ')">ㄤ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄥ')">ㄥ</div>
+                                <div class="v-key vowel" onclick="pressVKey('ㄦ')">ㄦ</div>
+                                <div class="v-key tone" onclick="pressVKey('ˋ')">ˋ</div>
+                                <div class="v-key tone" onclick="pressVKey('˙')">˙</div>
+                                <div class="v-key special" onclick="pressVKey('CLR')">清除</div>
+                                <div class="v-key consonant" style="visibility:hidden"></div>
+                                <div class="v-key consonant" style="visibility:hidden"></div>
+                            </div>
+
+                            <button class="btn-primary" style="width:100%; margin-top:12px; font-size:0.85rem; padding:8px 0; justify-content:center;" id="btn-apply-custom" onclick="applyCustomPhonetic()" disabled>
+                                套用此自訂注音
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Under the Hood: Unicode Inspector -->
+        <section class="panel inspector-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <svg style="width:20px;height:20px;stroke:var(--accent-cyan)" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    Unicode 字元流檢視器 (Under the Hood Code Inspector)
+                </h2>
+            </div>
+            
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
+                這裡呈現了目前文本在記憶體中的真實 Unicode 字元流。IVS 技術的精髓在於<b>將「語意文字」與「注音字形」徹底分離</b>。
+                中文字元後面附帶一個看不見的變體選擇子（如 <code>E01E2</code>）或私有區代碼（如 <code>F195</code>），由字型在渲染時動態組合出對應讀音，這使得內文搜尋與剪貼依然能夠完全正常運作！
+            </p>
+
+            <div class="inspector-grid" id="inspector-container">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="margin-top: 30px; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+            字嗨注音字型系列及 IVS 讀音規格係由 But Ko (ButTaiwan) 開發設計。本專案為互動式排版與排版效能展示工具。
+        </footer>
+
+    </div>
+
+    <!-- Dynamic Alert Toast -->
+    <div class="toast" id="alert-toast">
+        <svg class="toast-icon" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="toast-message">字型載入成功！</span>
+    </div>
+
+    <!-- Load Local DB & External Script -->
+    <script src="./poyin_db.js" defer></script>
+    <script src="./script.js" defer></script>
+</body>
+</html>
