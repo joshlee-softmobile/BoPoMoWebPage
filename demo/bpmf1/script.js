@@ -3,7 +3,7 @@
    High-Accuracy Contextual Conversion, Serialization, & RWD Interactivity
    ========================================================================== */
 
-import { BpmfEngine } from './bpmf.js';
+import { BpmfEngine } from '../services/bpmf.js';
 
 // --- Global Application State ---
 let parsedTokens = [];
