@@ -353,11 +353,12 @@ export class BpmfEngine {
             }
         }
 
-        // --- Pass 2: Greedily Match contiguous runs of Chinese characters in 'plain' tokens against MoeDictionary.phrases ---
+        // --- Pass 2: Greedily Match contiguous runs of Chinese characters using Backward Maximum Matching (BMM) ---
         const maxPhraseLen = 10;
         const phrases = MoeDictionary.phrases || {};
 
-        for (let i = 0; i < tokens.length; i++) {
+        // Scan right-to-left (BMM)
+        for (let i = tokens.length - 1; i >= 0; i--) {
             if (tokens[i].type !== 'plain' || !isChineseChar(tokens[i].char)) {
                 continue;
             }
@@ -365,12 +366,14 @@ export class BpmfEngine {
             let matchedLen = 0;
             let matchedZhuyins = null;
 
-            for (let len = Math.min(maxPhraseLen, tokens.length - i); len >= 2; len--) {
+            // Greedily look for the longest phrase ending at index `i`
+            for (let len = Math.min(maxPhraseLen, i + 1); len >= 2; len--) {
+                const startIdx = i - len + 1;
                 let phrase = '';
                 let isContiguousPlainChinese = true;
 
                 for (let j = 0; j < len; j++) {
-                    const t = tokens[i + j];
+                    const t = tokens[startIdx + j];
                     if (t.type !== 'plain' || !isChineseChar(t.char)) {
                         isContiguousPlainChinese = false;
                         break;
@@ -386,11 +389,13 @@ export class BpmfEngine {
             }
 
             if (matchedLen > 0) {
-                // Apply phrase pronunciations
+                const startIdx = i - matchedLen + 1;
+                // Apply phrase pronunciations to all characters in the matched span
                 for (let j = 0; j < matchedLen; j++) {
-                    const char = tokens[i + j].char;
+                    const idx = startIdx + j;
+                    const char = tokens[idx].char;
                     const zy = matchedZhuyins[j];
-                    tokens[i + j] = {
+                    tokens[idx] = {
                         type: 'chinese',
                         char: char,
                         token: char,
@@ -401,8 +406,8 @@ export class BpmfEngine {
                         inPhrase: true
                     };
                 }
-                // Skip ahead
-                i += matchedLen - 1;
+                // Advance pointer leftwards past the matched phrase
+                i = startIdx;
             }
         }
 

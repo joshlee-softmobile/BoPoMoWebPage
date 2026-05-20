@@ -60,10 +60,12 @@ export class MoeDictionary {
                             const col5 = data[i][5];
                             const col5Num = typeof col5 === 'number' ? col5 : parseInt(col5, 10);
                             const rank = (col5Num === 0 || isNaN(col5Num)) ? 1 : col5Num;
+                            const explanation = data[i][13] || '';
 
                             singleChars[char].push({
                                 zhuyin: zy,
-                                rank: rank
+                                rank: rank,
+                                explanation: explanation
                             });
                             singleCharCount++;
                         }
@@ -90,15 +92,65 @@ export class MoeDictionary {
                 }
             }
 
+            // 2. Dynamic Subphrase Extraction from phrases of length >= 3
+            const subPhrases = {};
+            for (const [phrase, zys] of Object.entries(phrases)) {
+                if (phrase.length >= 3) {
+                    for (let len = 2; len <= Math.min(3, phrase.length - 1); len++) {
+                        for (let start = 0; start <= phrase.length - len; start++) {
+                            const subWord = phrase.substring(start, start + len);
+                            // Only add if not already in phrases and not already added to subPhrases
+                            if (!phrases[subWord] && !subPhrases[subWord]) {
+                                subPhrases[subWord] = zys.slice(start, start + len);
+                            }
+                        }
+                    }
+                }
+            }
+            Object.assign(phrases, subPhrases);
+
             // Clean up temporary rank properties to keep TAIWAN_PHRASES clean
             for (const key in phrases) {
                 delete phrases[key]._rank;
             }
 
-            // Sort single-character candidates by rank (ascending) and clean up temporary rank property
+            // 3. Frequency-Based Character Pronunciation Counting in Phrases
+            for (const [phrase, zys] of Object.entries(phrases)) {
+                for (let j = 0; j < phrase.length; j++) {
+                    const char = phrase[j];
+                    const zy = zys[j];
+                    if (singleChars[char]) {
+                        const candidate = singleChars[char].find(c => c.zhuyin === zy);
+                        if (candidate) {
+                            candidate.freq = (candidate.freq || 0) + 1;
+                        }
+                    }
+                }
+            }
+
+            // 4. Sort single-character candidates: Neutral Tone First (if clitic), then Phrase Frequency, then Dictionary Rank
             for (const char in singleChars) {
-                singleChars[char].sort((a, b) => a.rank - b.rank);
-                singleChars[char].forEach(c => delete c.rank);
+                singleChars[char].sort((a, b) => {
+                    const aIsClitic = a.zhuyin.startsWith('˙') && /助詞|詞綴|合音|同「吧」/.test(a.explanation || '');
+                    const bIsClitic = b.zhuyin.startsWith('˙') && /助詞|詞綴|合音|同「吧」/.test(b.explanation || '');
+                    if (aIsClitic !== bIsClitic) {
+                        return aIsClitic ? -1 : 1; // 1. Neutral Tone First clitic priority
+                    }
+
+                    const aFreq = a.freq || 0;
+                    const bFreq = b.freq || 0;
+                    if (bFreq !== aFreq) {
+                        return bFreq - aFreq; // 2. Phrase Frequency
+                    }
+                    return a.rank - b.rank; // 3. Dictionary Rank
+                });
+
+                // Clean up temporary properties to keep single-character database clean and lightweight
+                singleChars[char].forEach(c => {
+                    delete c.rank;
+                    delete c.freq;
+                    delete c.explanation;
+                });
             }
 
             console.log(`Parsed ${count} MOE phrases and ${singleCharCount} unique MOE single-character candidate mappings!`);
