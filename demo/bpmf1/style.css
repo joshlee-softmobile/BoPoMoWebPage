@@ -1085,6 +1085,7 @@ body.dark-theme .profile-char {
 .candidate-option-btn {
     border: 1px solid var(--border-color);
     background: var(--bg-input);
+    color: var(--text-main);
     border-radius: 8px;
     padding: 10px 16px;
     cursor: pointer;
