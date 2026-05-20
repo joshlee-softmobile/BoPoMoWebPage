@@ -1,16 +1,16 @@
 @font-face {
     font-family: 'BpmfHuninn';
-    src: url('../font/BpmfHuninn-Regular.ttf') format('truetype');
+    src: url('../fonts/BpmfHuninn-Regular.ttf') format('truetype');
 }
 
 @font-face {
     font-family: 'BpmfIansui';
-    src: url('../font/BpmfIansui-Regular.ttf') format('truetype');
+    src: url('../fonts/BpmfIansui-Regular.ttf') format('truetype');
 }
 
 @font-face {
     font-family: 'BpmfZihiKaiStd';
-    src: url('../font/BpmfZihiKaiStd-Regular.ttf') format('truetype');
+    src: url('../fonts/BpmfZihiKaiStd-Regular.ttf') format('truetype');
 }
 
 :root {

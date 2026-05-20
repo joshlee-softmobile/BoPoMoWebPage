@@ -17,7 +17,7 @@ const PRESETS = {
 // Initialize application once document is ready
 window.addEventListener('DOMContentLoaded', () => {
     // Register font face for default font on the fly immediately
-    switchFont('BpmfHuninn', '../font/BpmfHuninn-Regular.ttf', '注音粉圓 (ButTaiwan)', '4.8 MB');
+    switchFont('BpmfHuninn', '../fonts/BpmfHuninn-Regular.ttf', '注音粉圓 (ButTaiwan)', '4.8 MB');
     
     // Set initial preset
     document.getElementById('text-input').value = PRESETS['preset-poyin'];

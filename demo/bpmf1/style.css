@@ -6,7 +6,7 @@
 /* --- Font Definitions --- */
 @font-face {
     font-family: 'BopomofoRuby';
-    src: url('../font/BopomofoRuby1909-v1-Regular.ttf') format('truetype');
+    src: url('../fonts/BopomofoRuby1909-v1-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
